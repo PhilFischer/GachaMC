@@ -14,7 +14,7 @@ class InputWidget(QWidget):
 
     def __init__(self, connection: Connection):
         super().__init__()
-        self.source = connection.source
+        self.connection = connection
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -28,10 +28,11 @@ class InputWidget(QWidget):
         layout.addWidget(control_widget)
 
         edit = QDoubleSpinBox()
-        edit.setValue(1)
+        edit.setValue(connection.output_rate)
         edit.setMinimum(0.01)
         edit.setMaximum(10000)
         edit.wheelEvent = lambda event: None
+        edit.valueChanged.connect(self.change_value)
         controls.addWidget(edit)
 
         delete_button = QToolButton()
@@ -40,6 +41,10 @@ class InputWidget(QWidget):
         delete_button.setIconSize(QSize(18, 18))
         self.deleted = delete_button.clicked
         controls.addWidget(delete_button)
+
+    def change_value(self, value):
+        """Resolve change value event"""
+        self.connection.output_rate = value
 
 
 class OutputWidget(QWidget):
@@ -47,12 +52,12 @@ class OutputWidget(QWidget):
 
     def __init__(self, connection: Connection):
         super().__init__()
-        self.target = connection.target
+        self.connection = connection
 
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        title = QLabel(connection.source.name)
+        title = QLabel(connection.target.name)
         layout.addWidget(title)
 
         controls = QHBoxLayout()
@@ -61,10 +66,11 @@ class OutputWidget(QWidget):
         layout.addWidget(control_widget)
 
         edit = QDoubleSpinBox()
-        edit.setValue(1)
+        edit.setValue(connection.input_rate)
         edit.setMinimum(0.01)
         edit.setMaximum(10000)
         edit.wheelEvent = lambda event: None
+        edit.valueChanged.connect(self.change_value)
         controls.addWidget(edit)
 
         delete_button = QToolButton()
@@ -73,6 +79,10 @@ class OutputWidget(QWidget):
         delete_button.setIconSize(QSize(18, 18))
         self.deleted = delete_button.clicked
         controls.addWidget(delete_button)
+
+    def change_value(self, value):
+        """Resolve change value event"""
+        self.connection.input_rate = value
 
 
 class ItemPanel(QScrollArea):
@@ -85,6 +95,7 @@ class ItemPanel(QScrollArea):
         self.setMinimumWidth(240)
         self.setMaximumWidth(240)
         self.setWidgetResizable(True)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignTop)
@@ -180,7 +191,7 @@ class ItemPanel(QScrollArea):
         for connection in item.connections:
             self.__add_target(connection)
 
-    def connect_deleted(self, callback: Callable):
+    def connect(self, callback: Callable):
         """Add callback for deleted connections"""
         self.__callbacks.append(callback)
 

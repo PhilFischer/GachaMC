@@ -29,7 +29,7 @@ class Controller():
         self.item.add_connection.connect(self.add_connection_event)
         self.item.add_input.connect(self.add_input_event)
         self.item.deleted.connect(self.delete_component)
-        self.item.connect_deleted(self.delete_connection)
+        self.item.connect(self.delete_connection)
 
         main_window.canvas.draw_flow_model(self.model)
 
