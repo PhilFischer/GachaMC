@@ -28,6 +28,8 @@ class Controller():
         self.item = main_window.item
         self.item.add_connection.connect(self.add_connection_event)
         self.item.add_input.connect(self.add_input_event)
+        self.item.deleted.connect(self.delete_component)
+        self.item.connect_deleted(self.delete_connection)
 
         main_window.canvas.draw_flow_model(self.model)
 
@@ -60,6 +62,18 @@ class Controller():
         self.__connect_source = self.canvas.selected_object
         self.__connect_target = None
 
+    def delete_component(self):
+        """Resolve delete component event"""
+        obj = self.canvas.selected_object
+        self.canvas.selected_object = None
+        self.model.delete_component(obj)
+        self.item.set_item(None)
+
+    def delete_connection(self, connection):
+        """Resolve delete connection event"""
+        self.model.delete_connection(connection)
+        self.item.set_item(self.canvas.selected_object)
+
     def __complete_connection_event(self, target: Source):
         """Complete connection event"""
         if isinstance(self.__connect_source, Source) and isinstance(target, Currency):
@@ -82,5 +96,4 @@ class Controller():
             self.__complete_connection_event(component)
         elif not self.__connect_target is None:
             self.__complete_input_event(component)
-        else:
-            self.item.set_item(component)
+        self.item.set_item(component)

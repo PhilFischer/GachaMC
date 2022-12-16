@@ -35,6 +35,13 @@ class Component():
         if connection.source == self:
             self.connections.append(connection)
 
+    def delete_connection(self, connection: Connection):
+        """Delete input or output connection"""
+        if connection in self.inputs:
+            self.inputs.remove(connection)
+        if connection in self.connections:
+            self.connections.remove(connection)
+
 
 class Connection():
     """GMC Connection Class"""

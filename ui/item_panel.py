@@ -1,9 +1,12 @@
 """Item Panel UI"""
 
-from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QWidget, QScrollArea, QVBoxLayout, QLabel, QFrame, QPushButton, QDoubleSpinBox
+from typing import Callable
+from PySide2.QtCore import Qt, QSize
+from PySide2.QtGui import QIcon
+from PySide2.QtWidgets import QWidget, QScrollArea, QHBoxLayout, QVBoxLayout, QLabel, QFrame, QPushButton, QToolButton, QDoubleSpinBox
 
-from gmc.components import Component, Connection, Source
+from ui.constants import DANGER_COLOR
+from gmc.components import Component, Connection, Origin, Source
 
 
 class InputWidget(QWidget):
@@ -19,11 +22,24 @@ class InputWidget(QWidget):
         title = QLabel(connection.source.name)
         layout.addWidget(title)
 
+        controls = QHBoxLayout()
+        control_widget = QWidget()
+        control_widget.setLayout(controls)
+        layout.addWidget(control_widget)
+
         edit = QDoubleSpinBox()
         edit.setValue(1)
         edit.setMinimum(0.01)
+        edit.setMaximum(10000)
         edit.wheelEvent = lambda event: None
-        layout.addWidget(edit)
+        controls.addWidget(edit)
+
+        delete_button = QToolButton()
+        delete_button.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        delete_button.setIcon(QIcon('img/xmark-solid.png'))
+        delete_button.setIconSize(QSize(18, 18))
+        self.deleted = delete_button.clicked
+        controls.addWidget(delete_button)
 
 
 class OutputWidget(QWidget):
@@ -36,14 +52,27 @@ class OutputWidget(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        title = QLabel(connection.target.name)
+        title = QLabel(connection.source.name)
         layout.addWidget(title)
+
+        controls = QHBoxLayout()
+        control_widget = QWidget()
+        control_widget.setLayout(controls)
+        layout.addWidget(control_widget)
 
         edit = QDoubleSpinBox()
         edit.setValue(1)
-        edit.setMinimum(0)
+        edit.setMinimum(0.01)
+        edit.setMaximum(10000)
         edit.wheelEvent = lambda event: None
-        layout.addWidget(edit)
+        controls.addWidget(edit)
+
+        delete_button = QToolButton()
+        delete_button.setToolButtonStyle(Qt.ToolButtonIconOnly)
+        delete_button.setIcon(QIcon('img/xmark-solid.png'))
+        delete_button.setIconSize(QSize(18, 18))
+        self.deleted = delete_button.clicked
+        controls.addWidget(delete_button)
 
 
 class ItemPanel(QScrollArea):
@@ -51,6 +80,7 @@ class ItemPanel(QScrollArea):
 
     def __init__(self):
         super().__init__()
+        self.__callbacks = []
 
         self.setMinimumWidth(240)
         self.setMaximumWidth(240)
@@ -116,6 +146,12 @@ class ItemPanel(QScrollArea):
         layout.addWidget(sep3)
         layout.addSpacing(18)
 
+        self.__delete_button = QPushButton('Delete')
+        self.__delete_button.setStyleSheet(f"color: {DANGER_COLOR}; border: 2px solid {DANGER_COLOR};")
+        self.__delete_button.setVisible(False)
+        self.deleted = self.__delete_button.clicked
+        layout.addWidget(self.__delete_button)
+
 
     def set_item(self, item: Component):
         """Set item to be displayed"""
@@ -123,18 +159,20 @@ class ItemPanel(QScrollArea):
             self.__sources.itemAt(i).widget().deleteLater()
         for i in reversed(range(self.__targets.count())):
             self.__targets.itemAt(i).widget().deleteLater()
-        if item is None:
-            self.__title.setText("")
-            self.__name.setText("")
-            self.__input_button.setVisible(False)
-            self.__connection_button.setVisible(False)
-            return
         if isinstance(item, Source):
             self.__input_button.setVisible(True)
             self.__connection_button.setVisible(True)
         else:
             self.__input_button.setVisible(False)
             self.__connection_button.setVisible(False)
+        if isinstance(item, Component) and not isinstance(item, Origin):
+            self.__delete_button.setVisible(True)
+        else:
+            self.__delete_button.setVisible(False)
+        if item is None:
+            self.__title.setText("")
+            self.__name.setText("")
+            return
         self.__title.setText(str(item.__class__.__name__))
         self.__name.setText(item.name)
         for connection in item.inputs:
@@ -142,10 +180,21 @@ class ItemPanel(QScrollArea):
         for connection in item.connections:
             self.__add_target(connection)
 
+    def connect_deleted(self, callback: Callable):
+        """Add callback for deleted connections"""
+        self.__callbacks.append(callback)
+
+    def delete_connection(self, connection):
+        """Resolve delete connection event"""
+        for callback in self.__callbacks:
+            callback(connection)
+
     def __add_source(self, connection: Connection):
         widget = InputWidget(connection)
+        widget.deleted.connect(lambda: self.delete_connection(connection))
         self.__sources.addWidget(widget)
 
     def __add_target(self, connection: Connection):
         widget = OutputWidget(connection)
+        widget.deleted.connect(lambda: self.delete_connection(connection))
         self.__targets.addWidget(widget)

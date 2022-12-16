@@ -56,6 +56,30 @@ class FlowModel():
         for callback in self.__callbacks:
             callback(self)
 
+    def delete_component(self, component: Component):
+        """Deletes a component from the flow model"""
+        for connection in component.inputs:
+            self.delete_connection(connection, notify=False)
+        for connection in component.connections:
+            self.delete_connection(connection, notify=False)
+        if isinstance(component, Target):
+            self.targets.remove(component)
+        elif isinstance(component, Source):
+            self.sources.remove(component)
+        elif isinstance(component, Currency):
+            self.currencies.remove(component)
+        for callback in self.__callbacks:
+            callback(self)
+
+    def delete_connection(self, connection: Connection, notify: bool = True):
+        """Deletes a component from the flow model"""
+        connection.source.delete_connection(connection)
+        connection.target.delete_connection(connection)
+        self.connections.remove(connection)
+        if notify:
+            for callback in self.__callbacks:
+                callback(self)
+
     def connect(self, callback: Callable):
         """Add a callback for model changes"""
         self.__callbacks.append(callback)
