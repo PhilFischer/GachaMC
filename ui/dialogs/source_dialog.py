@@ -14,6 +14,7 @@ class SourceDialog(QDialog):
 
         self.setWindowTitle("Add New Source")
         self.setWindowModality(Qt.ApplicationModal)
+        self.setMinimumWidth(280)
 
         layout = QVBoxLayout()
         self.setLayout(layout)

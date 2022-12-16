@@ -6,7 +6,7 @@ from PySide2.QtCore import Qt, QRectF
 from PySide2.QtGui import QPainter, QPixmap, QPen, QBrush
 
 from gmc.components import Position, Connection, Source, Currency, Target
-from ui.constants import (PRIMARY_COLOR, PRIMARY_LIGHT_COLOR, PRIMARY_DARK_COLOR, 
+from ui.constants import (PRIMARY_COLOR, PRIMARY_LIGHT_COLOR, PRIMARY_DARK_COLOR,
     SECONDARY_COLOR, SECONDARY_LIGHT_COLOR, SECONDARY_DARK_COLOR)
 
 if TYPE_CHECKING:
@@ -59,6 +59,7 @@ class Painter(QPainter):
         else:
             self.setBrush(QBrush(PRIMARY_COLOR, Qt.SolidPattern))
         self.drawRect(x, y, size, size)
+        self.drawText(QRectF(x-2*size, y-size/2-10, 5*size, size), Qt.AlignCenter, source.name)
 
     def drawOrigin(self, position: Position = Position(0, 0), highlight: bool = False):  # pylint: disable=invalid-name
         """Draws origin object"""
@@ -73,9 +74,9 @@ class Painter(QPainter):
         self.drawEllipse(x, y, size, size)
 
     def drawTarget(self, target: Target, highlight: bool = False):  # pylint: disable=invalid-name
-        """Draws target object"""
+        """Draws a target object"""
         x, y = self.__canvas.world_to_screen(target.pos)
-        size = self.__canvas.ppu * Source.SIZE
+        size = self.__canvas.ppu * Target.SIZE
         x, y = x - size/2, y - size/2
         self.setPen(QPen(SECONDARY_DARK_COLOR))
         if highlight:
@@ -83,3 +84,4 @@ class Painter(QPainter):
         else:
             self.setBrush(QBrush(SECONDARY_COLOR, Qt.SolidPattern))
         self.drawRect(x, y, size, size)
+        self.drawText(QRectF(x-2*size, y-size/2-10, 5*size, size), Qt.AlignCenter, target.name)

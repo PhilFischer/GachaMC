@@ -40,11 +40,11 @@ class FlowModel():
             return
         if isinstance(source, Currency) and isinstance(target, Currency):
             return
+        if isinstance(source, Target):
+            return
+        if isinstance(target, Origin):
+            return
         connection = Connection(source, target)
-        if isinstance(connection.source, Target):
-            return
-        if isinstance(connection.target, Origin):
-            return
         self.connections.append(connection)
         for callback in self.__callbacks:
             callback(self)

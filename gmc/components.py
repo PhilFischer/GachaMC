@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+
 class Position():
     """GMC Position Class"""
 
@@ -18,7 +19,8 @@ class Component():
 
     SIZE = 0.4
 
-    def __init__(self, position: Position = None):
+    def __init__(self, name: str, position: Position = None):
+        self.name = name
         self.pos = position if position is not None else Position()
         self.inputs = []
         self.connections = []
@@ -50,8 +52,7 @@ class Currency(Component):
     """GMC Currency Class"""
 
     def __init__(self, name: str, position: Position = None):
-        super().__init__(position)
-        self.name = name
+        super().__init__(name, position)
         if name == "":
             raise ValueError('Currency name cannot be empty!')
 
@@ -66,11 +67,15 @@ class Source(Component):
     SIZE = 0.36
 
     def __init__(self, name: str, position: Position = None):
-        super().__init__(position)
-        self.name = name
+        super().__init__(name, position)
         if name == "":
             raise ValueError('Source name cannot be empty!')
 
 
 class Target(Source):
     """GMC Target Class"""
+
+    def __init__(self, name: str, position: Position = None):
+        super().__init__(position)
+        if name == "":
+            raise ValueError('Target name cannot be empty!')
