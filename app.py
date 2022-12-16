@@ -1,5 +1,6 @@
 """Gacha Monte Carlo Application"""
 
+from __future__ import annotations
 from PySide2.QtCore import Qt, QTimer
 from PySide2.QtGui import QGuiApplication
 from PySide2.QtWidgets import QApplication, QStyle

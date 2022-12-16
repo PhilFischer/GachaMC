@@ -1,5 +1,6 @@
 """GMC Model Components"""
 
+from __future__ import annotations
 
 class Position():
     """GMC Position Class"""
@@ -19,6 +20,30 @@ class Component():
 
     def __init__(self, position: Position = None):
         self.pos = position if position is not None else Position()
+        self.inputs = []
+        self.connections = []
+
+    def add_input(self, connection: Connection):
+        """Add input connection to component"""
+        if connection.target == self:
+            self.inputs.append(connection)
+
+    def add_connection(self, connection: Connection):
+        """Add output connection to component"""
+        if connection.source == self:
+            self.connections.append(connection)
+
+
+class Connection():
+    """GMC Connection Class"""
+
+    def __init__(self, source: Component, target: Component, input_rate: float = 1, output_rate: float = 1):
+        self.source = source
+        self.target = target
+        self.input_rate = input_rate
+        self.output_rate = output_rate
+        source.add_connection(self)
+        target.add_input(self)
 
 
 class Currency(Component):
@@ -28,7 +53,7 @@ class Currency(Component):
         super().__init__(position)
         self.name = name
         if name == "":
-            raise ValueError("Currency name cannot be empty!")
+            raise ValueError('Currency name cannot be empty!')
 
 
 class Origin(Currency):
@@ -39,6 +64,12 @@ class Source(Component):
     """GMC Source Class"""
 
     SIZE = 0.36
+
+    def __init__(self, name: str, position: Position = None):
+        super().__init__(position)
+        self.name = name
+        if name == "":
+            raise ValueError('Source name cannot be empty!')
 
 
 class Target(Source):

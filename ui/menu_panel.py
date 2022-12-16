@@ -19,18 +19,15 @@ class MenuPanel(QWidget):
         layout.setAlignment(Qt.AlignTop)
         self.setLayout(layout)
 
-        currency_button = QPushButton()
-        currency_button.setText('Add Currency')
+        currency_button = QPushButton('Add Currency')
         self.add_currency = currency_button.clicked
         layout.addWidget(currency_button)
 
-        source_button = QPushButton()
-        source_button.setText('Add Source')
+        source_button = QPushButton('Add Source')
         self.add_source = source_button.clicked
         layout.addWidget(source_button)
 
-        target_button = QPushButton()
-        target_button.setText('Add Target')
+        target_button = QPushButton('Add Target')
         target_button.setStyleSheet(f"color: {SECONDARY_COLOR}; border: 2px solid {SECONDARY_COLOR};")
         self.add_target = target_button.clicked
         layout.addWidget(target_button)

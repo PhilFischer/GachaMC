@@ -23,6 +23,7 @@ class CentralCanvas(QLabel):
         self.setStyleSheet(f"border: 2px solid {PRIMARY_COLOR};")
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
+        self.selected_object = None
         self.ppu = 100
         self.__center = Position()
         self.__selection_callbacks = []
@@ -32,8 +33,8 @@ class CentralCanvas(QLabel):
         self.__currencies = []
         self.__sources = []
         self.__targets = []
+        self.__connections = []
         self.__drag_start = Position()
-        self.__select_obj = None
 
     def draw_flow_model(self, flow_model: FlowModel) -> None:
         """Draws a flow model"""
@@ -41,6 +42,7 @@ class CentralCanvas(QLabel):
         self.__currencies = flow_model.currencies
         self.__sources = flow_model.sources
         self.__targets = flow_model.targets
+        self.__connections = flow_model.connections
         self.__redraw()
 
     def center(self) -> Position:
@@ -73,17 +75,17 @@ class CentralCanvas(QLabel):
         for comp in self.__components():
             if abs(pos.x - comp.pos.x) < comp.SIZE/2 and abs(pos.y - comp.pos.y) < comp.SIZE/2:
                 select_obj = comp
-        self.__select_obj = select_obj
+        self.selected_object = select_obj
         for callback in self.__selection_callbacks:
             callback(select_obj)
         self.__redraw()
         return super().mouseMoveEvent(ev)
 
     def mouseMoveEvent(self, ev: QMouseEvent):
-        if self.__select_obj is not None:
+        if self.selected_object is not None:
             pos = self.screen_to_world(ev.pos().x(), ev.pos().y())
             for callback in self.__drag_callbacks:
-                callback(self.__select_obj, Position(pos.x - self.__drag_start.x, pos.y - self.__drag_start.y))
+                callback(self.selected_object, Position(pos.x - self.__drag_start.x, pos.y - self.__drag_start.y))
             self.__drag_start = pos
         return super().mouseMoveEvent(ev)
 
@@ -101,6 +103,8 @@ class CentralCanvas(QLabel):
         canvas = self.pixmap()
         canvas.fill(BACKGROUND_COLOR)
         painter = Painter(canvas, self)
+        for connection in self.__connections:
+            painter.drawEdge(connection)
         painter.drawOrigin(self.__origin.pos)
         for currency in self.__currencies:
             painter.drawCurrency(currency)
@@ -108,14 +112,14 @@ class CentralCanvas(QLabel):
             painter.drawSource(source)
         for target in self.__targets:
             painter.drawTarget(target)
-        if not self.__select_obj is None and isinstance(self.__select_obj, Origin):
-            painter.drawOrigin(self.__select_obj.pos, highlight=True)
-        elif not self.__select_obj is None and isinstance(self.__select_obj, Currency):
-            painter.drawCurrency(self.__select_obj, highlight=True)
-        elif not self.__select_obj is None and isinstance(self.__select_obj, Target):
-            painter.drawTarget(self.__select_obj, highlight=True)
-        elif not self.__select_obj is None and isinstance(self.__select_obj, Source):
-            painter.drawSource(self.__select_obj, highlight=True)
+        if not self.selected_object is None and isinstance(self.selected_object, Origin):
+            painter.drawOrigin(self.selected_object.pos, highlight=True)
+        elif not self.selected_object is None and isinstance(self.selected_object, Currency):
+            painter.drawCurrency(self.selected_object, highlight=True)
+        elif not self.selected_object is None and isinstance(self.selected_object, Target):
+            painter.drawTarget(self.selected_object, highlight=True)
+        elif not self.selected_object is None and isinstance(self.selected_object, Source):
+            painter.drawSource(self.selected_object, highlight=True)
         painter.end()
         self.setPixmap(canvas)
 
