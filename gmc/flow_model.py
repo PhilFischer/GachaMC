@@ -1,6 +1,9 @@
 """GMC Flow Model"""
 
+from __future__ import annotations
+
 from typing import List, Callable
+import yaml
 
 from gmc.components import Position, Component, Connection, Currency, Origin, Source, Target
 
@@ -83,3 +86,15 @@ class FlowModel():
     def connect(self, callback: Callable):
         """Add a callback for model changes"""
         self.__callbacks.append(callback)
+
+    def save_to_file(self, filename: str):
+        """Saves a flow model to a yaml file"""
+        model_dict = {
+            'origin': self.origin.to_dict(),
+            'currencies': [c.to_dict() for c in self.currencies],
+            'sources': [s.to_dict() for s in self.sources],
+            'targets': [t.to_dict() for t in self.targets],
+            'connections': [c.to_dict() for c in self.connections]
+        }
+        with open(filename, 'w', encoding = 'utf-8') as file:
+            file.write(yaml.dump(model_dict))

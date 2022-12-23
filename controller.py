@@ -1,5 +1,7 @@
 """Main Application Controller"""
 
+from PySide2.QtWidgets import QFileDialog
+
 from ui.main_window import MainWindow
 from ui.dialogs.currency_dialog import CurrencyDialog
 from ui.dialogs.source_dialog import SourceDialog
@@ -20,6 +22,8 @@ class Controller():
         main_window.menu.add_currency.connect(self.add_currency_event)
         main_window.menu.add_source.connect(self.add_source_event)
         main_window.menu.add_target.connect(self.add_target_event)
+        main_window.menu.save_model.connect(self.save_model)
+        main_window.menu.load_model.connect(self.load_model)
 
         self.canvas = main_window.canvas
         self.canvas.connect_selection(self.cavas_selection)
@@ -97,3 +101,12 @@ class Controller():
         elif not self.__connect_target is None:
             self.__complete_input_event(component)
         self.item.set_item(component)
+
+    def save_model(self):
+        """Resolve save model event"""
+        filename = QFileDialog.getSaveFileName(caption = 'Save Model Graph', dir = 'model.yaml', filter = 'YAML (*.yaml);;All Files (*.*)')
+        self.model.save_to_file(filename[0])
+
+    def load_model(self):
+        """Resolve load model event"""
+        filename = QFileDialog.getOpenFileName(caption = 'Load Model Graph', filter = 'YAML (*.yaml);;All Files (*.*)')

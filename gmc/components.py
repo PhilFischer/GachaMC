@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import uuid
+
 
 class Position():
     """GMC Position Class"""
@@ -20,6 +22,7 @@ class Component():
     SIZE = 0.4
 
     def __init__(self, name: str, position: Position = None):
+        self._id = uuid.uuid4()
         self.name = name
         self.pos = position if position is not None else Position()
         self.inputs = []
@@ -42,6 +45,10 @@ class Component():
         if connection in self.connections:
             self.connections.remove(connection)
 
+    def to_dict(self):
+        """Converts the component into a dictionary"""
+        return {'_id': self._id, 'name': self.name, 'pos': (self.pos.x, self.pos.y)}
+
 
 class Connection():
     """GMC Connection Class"""
@@ -53,6 +60,11 @@ class Connection():
         self.output_rate = output_rate
         source.add_connection(self)
         target.add_input(self)
+
+    # pylint: disable=protected-access
+    def to_dict(self):
+        """Converts the connection into a dictionary"""
+        return {'source': self.source._id, 'target': self.target._id, 'output': self.output_rate, 'input': self.input_rate}
 
 
 class Currency(Component):

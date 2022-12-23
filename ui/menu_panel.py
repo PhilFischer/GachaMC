@@ -34,5 +34,15 @@ class MenuPanel(QWidget):
 
         separator = QFrame()
         separator.setFrameShape(QFrame.HLine)
-        separator.setStyleSheet(f"border: 2px solid {PRIMARY_COLOR};")
+        separator.setStyleSheet(f"border: 2px solid {PRIMARY_COLOR}; padding: 5px 0px 5px 0px;")
         layout.addWidget(separator)
+
+        save_button = QPushButton('Save Graph')
+        save_button.setStyleSheet(f"color: {SECONDARY_COLOR}; border: 2px solid {SECONDARY_COLOR};")
+        self.save_model = save_button.clicked
+        layout.addWidget(save_button)
+
+        load_button = QPushButton('Load Graph')
+        load_button.setStyleSheet(f"color: {SECONDARY_COLOR}; border: 2px solid {SECONDARY_COLOR};")
+        self.load_model = load_button.clicked
+        layout.addWidget(load_button)
