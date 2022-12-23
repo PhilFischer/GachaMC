@@ -58,9 +58,9 @@ class FlowModel():
 
     def delete_component(self, component: Component):
         """Deletes a component from the flow model"""
-        for connection in component.inputs:
+        for connection in component.inputs[:]:
             self.delete_connection(connection, notify=False)
-        for connection in component.connections:
+        for connection in component.connections[:]:
             self.delete_connection(connection, notify=False)
         if isinstance(component, Target):
             self.targets.remove(component)
