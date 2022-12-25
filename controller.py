@@ -110,3 +110,4 @@ class Controller():
     def load_model(self):
         """Resolve load model event"""
         filename = QFileDialog.getOpenFileName(caption = 'Load Model Graph', filter = 'YAML (*.yaml);;All Files (*.*)')
+        self.model.load_from_file(filename[0])

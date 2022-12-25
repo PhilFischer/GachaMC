@@ -38,7 +38,7 @@ class FlowModel():
             callback(self)
 
     def add_edge(self, source: Component, target: Component):
-        """Adds a connection to the flow model"""
+        """Adds a default connection to the flow model"""
         if isinstance(source, Source) and isinstance(target, Source):
             return
         if isinstance(source, Currency) and isinstance(target, Currency):
@@ -51,6 +51,16 @@ class FlowModel():
         self.connections.append(connection)
         for callback in self.__callbacks:
             callback(self)
+
+    def add_connection(self, connection: Connection):
+        """Adds a connection to the flow model"""
+        self.connections.append(connection)
+        for callback in self.__callbacks:
+            callback(self)
+
+    def get_components(self) -> List[Component]:
+        """Returns list of all components"""
+        return [self.origin] + self.currencies + self.sources + self.targets
 
     def move_component_position(self, component: Component, dpos: Position):
         """Sets new position for flow model component"""
@@ -97,4 +107,54 @@ class FlowModel():
             'connections': [c.to_dict() for c in self.connections]
         }
         with open(filename, 'w', encoding = 'utf-8') as file:
-            file.write(yaml.dump(model_dict))
+            yaml.dump(model_dict, file)
+
+    def load_from_file(self, filename: str):
+        """Loads the flow model from a yaml file"""
+        model_dict = {}
+        with open(filename, 'r', encoding = 'utf-8') as file:
+            model_dict = yaml.load(file, yaml.FullLoader)
+        if 'origin' in model_dict:
+            try:
+                origin = model_dict['origin']
+                self.origin = Origin(origin['name'], Position(origin['pos'][0], origin['pos'][1]))
+                self.origin.id = origin['_id']
+            except (KeyError, IndexError) as exc:
+                raise RuntimeError('Error loading origin. Malformed yaml file.') from exc
+        if 'currencies' in model_dict:
+            self.currencies = []
+            for data in model_dict['currencies']:
+                try:
+                    currency = Currency(data['name'], Position(data['pos'][0], data['pos'][1]))
+                    currency.id = data['_id']
+                    self.add_currency(currency)
+                except (KeyError, IndexError) as exc:
+                    raise RuntimeError('Error loading currency. Malformed yaml file.') from exc
+        if 'targets' in model_dict:
+            self.targets = []
+            for data in model_dict['targets']:
+                try:
+                    target = Target(data['name'], Position(data['pos'][0], data['pos'][1]))
+                    target.id = data['_id']
+                    self.add_target(target)
+                except (KeyError, IndexError) as exc:
+                    raise RuntimeError('Error loading target. Malformed yaml file.') from exc
+        if 'sources' in model_dict:
+            self.sources = []
+            for data in model_dict['sources']:
+                try:
+                    source = Source(data['name'], Position(data['pos'][0], data['pos'][1]))
+                    source.id = data['_id']
+                    self.add_source(source)
+                except (KeyError, IndexError) as exc:
+                    raise RuntimeError('Error loading source. Malformed yaml file.') from exc
+        if 'connections' in model_dict:
+            self.connections = []
+            for data in model_dict['connections']:
+                try:
+                    source = next(s for s in self.get_components() if s.id == data['source'])
+                    target = next(t for t in self.get_components() if t.id == data['target'])
+                    connection = Connection(source, target, data['input'], data['output'])
+                    self.add_connection(connection)
+                except (KeyError, IndexError) as exc:
+                    raise RuntimeError('Error loading connection. Malformed yaml file.') from exc

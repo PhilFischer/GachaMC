@@ -22,7 +22,7 @@ class Component():
     SIZE = 0.4
 
     def __init__(self, name: str, position: Position = None):
-        self._id = uuid.uuid4()
+        self.id = uuid.uuid4().hex  # pylint: disable=invalid-name
         self.name = name
         self.pos = position if position is not None else Position()
         self.inputs = []
