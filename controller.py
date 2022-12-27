@@ -30,10 +30,10 @@ class Controller():
         self.canvas.connect_drag(self.model.move_component_position)
 
         self.item = main_window.item
-        self.item.add_connection.connect(self.add_connection_event)
         self.item.add_input.connect(self.add_input_event)
+        self.item.add_connection.connect(self.add_connection_event)
         self.item.deleted.connect(self.delete_component)
-        self.item.connect(self.delete_connection)
+        self.item.updated.connect(self.delete_connection)
 
         main_window.canvas.draw_flow_model(self.model)
 
@@ -61,28 +61,12 @@ class Controller():
             target.pos = self.canvas.center()
             self.model.add_target(target)
 
-    def add_connection_event(self):
-        """Resolve add connection event"""
-        self.__connect_source = self.canvas.selected_object
-        self.__connect_target = None
-
     def delete_component(self):
         """Resolve delete component event"""
         obj = self.canvas.selected_object
         self.canvas.selected_object = None
         self.model.delete_component(obj)
         self.item.set_item(None)
-
-    def delete_connection(self, connection):
-        """Resolve delete connection event"""
-        self.model.delete_connection(connection)
-        self.item.set_item(self.canvas.selected_object)
-
-    def __complete_connection_event(self, target: Source):
-        """Complete connection event"""
-        if isinstance(self.__connect_source, Source) and isinstance(target, Currency):
-            self.model.add_edge(self.__connect_source, target)
-        self.__connect_source = None
 
     def add_input_event(self):
         """Resolve add input event"""
@@ -93,6 +77,22 @@ class Controller():
         if isinstance(self.__connect_target, Source) and isinstance(source, Currency):
             self.model.add_edge(source, self.__connect_target)
         self.__connect_target = None
+
+    def add_connection_event(self):
+        """Resolve add connection event"""
+        self.__connect_source = self.canvas.selected_object
+        self.__connect_target = None
+
+    def __complete_connection_event(self, target: Source):
+        """Complete connection event"""
+        if isinstance(self.__connect_source, Source) and isinstance(target, Currency):
+            self.model.add_edge(self.__connect_source, target)
+        self.__connect_source = None
+
+    def delete_connection(self, connection):
+        """Resolve delete connection event"""
+        self.model.delete_connection(connection)
+        self.item.set_item(self.canvas.selected_object)
 
     def cavas_selection(self, component: Component):
         """Resolve canvas selection event"""
