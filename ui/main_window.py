@@ -35,6 +35,7 @@ class MainWindow(QMainWindow):
         play_button.setMinimumWidth(112)
         play_button.setIcon(QIcon('img/play-solid.png'))
         play_button.setIconSize(QSize(26, 26))
+        self.start_simulation = play_button.clicked
         buttons.addWidget(play_button)
         buttons_widget = QWidget()
         buttons_widget.setLayout(buttons)

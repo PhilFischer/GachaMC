@@ -6,6 +6,7 @@ from ui.main_window import MainWindow
 from ui.dialogs.currency_dialog import CurrencyDialog
 from ui.dialogs.source_dialog import SourceDialog
 from ui.dialogs.target_dialog import TargetDialog
+from ui.windows.simulation_window import SimulationWindow
 from gmc.components import Component, Source, Currency
 from gmc.flow_model import FlowModel
 
@@ -14,8 +15,10 @@ class Controller():
     """Controller Class"""
 
     def __init__(self, main_window: MainWindow):
+        self._window = None
         self.__connect_source = None
         self.__connect_target = None
+
         self.model = FlowModel()
         self.model.connect(main_window.canvas.draw_flow_model)
 
@@ -24,6 +27,7 @@ class Controller():
         main_window.menu.add_target.connect(self.add_target_event)
         main_window.menu.save_model.connect(self.save_model)
         main_window.menu.load_model.connect(self.load_model)
+        main_window.start_simulation.connect(self.open_simulation_window)
 
         self.canvas = main_window.canvas
         self.canvas.connect_selection(self.cavas_selection)
@@ -111,3 +115,8 @@ class Controller():
         """Resolve load model event"""
         filename = QFileDialog.getOpenFileName(caption = 'Load Model Graph', filter = 'YAML (*.yaml);;All Files (*.*)')
         self.model.load_from_file(filename[0])
+
+    def open_simulation_window(self):
+        """Resolve start simulation event"""
+        self._window = SimulationWindow(self.model)
+        self._window.show()
