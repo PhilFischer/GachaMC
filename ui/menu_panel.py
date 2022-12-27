@@ -1,7 +1,8 @@
 """Menu Panel UI"""
 
 from PySide2.QtCore import Qt
-from PySide2.QtWidgets import QWidget, QVBoxLayout, QPushButton, QFrame
+from PySide2.QtGui import QPixmap
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QFrame
 
 from ui.constants import PRIMARY_COLOR, SECONDARY_COLOR
 
@@ -19,6 +20,14 @@ class MenuPanel(QWidget):
         layout.setAlignment(Qt.AlignTop)
         self.setLayout(layout)
 
+        logo = QPixmap('img/gmc-title-logo.png')
+        title = QLabel()
+        title.setPixmap(logo)
+        title.setFixedSize(180, 90)
+        title.setScaledContents(True)
+        layout.addWidget(title)
+        layout.addSpacing(30)
+
         currency_button = QPushButton('Add Currency')
         self.add_currency = currency_button.clicked
         layout.addWidget(currency_button)
@@ -34,8 +43,10 @@ class MenuPanel(QWidget):
 
         separator = QFrame()
         separator.setFrameShape(QFrame.HLine)
-        separator.setStyleSheet(f"border: 2px solid {PRIMARY_COLOR}; padding: 5px 0px 5px 0px;")
+        separator.setStyleSheet(f"border: 2px solid {PRIMARY_COLOR};")
+        layout.addSpacing(20)
         layout.addWidget(separator)
+        layout.addSpacing(20)
 
         save_button = QPushButton('Save Graph')
         save_button.setStyleSheet(f"color: {SECONDARY_COLOR}; border: 2px solid {SECONDARY_COLOR};")
