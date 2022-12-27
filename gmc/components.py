@@ -89,12 +89,3 @@ class Source(Component):
         super().__init__(name, position)
         if name == "":
             raise ValueError('Source name cannot be empty!')
-
-
-class Target(Source):
-    """GMC Target Class"""
-
-    def __init__(self, name: str, position: Position = None):
-        super().__init__(position)
-        if name == "":
-            raise ValueError('Target name cannot be empty!')

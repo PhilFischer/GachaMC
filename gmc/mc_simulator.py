@@ -11,6 +11,7 @@ class Simulator():
     """MC Simulator Class"""
 
     def __init__(self, model: FlowModel):
+        self._origin = model.origin.id
         self._graph = nx.DiGraph()
         for comp in model.get_components():
             self._graph.add_node(comp.id, name=comp.name)
@@ -19,5 +20,5 @@ class Simulator():
 
     def draw_flow_graph(self, axes: Axes):
         """Draw flow graph using Matplotlib Axes object"""
-        nx.draw_networkx(self._graph, ax=axes, with_labels=False, node_color=PRIMARY_COLOR)
+        nx.draw_networkx(self._graph, ax=axes, pos={self._origin: (0,0)}, with_labels=False, node_color=PRIMARY_COLOR)
         axes.set_facecolor(BACKGROUND_COLOR)

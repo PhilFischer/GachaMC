@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import List, Callable
 import yaml
 
-from gmc.components import Position, Component, Connection, Currency, Origin, Source, Target
+from gmc.components import Position, Component, Connection, Currency, Origin, Source
 
 
 class FlowModel():
@@ -16,7 +16,6 @@ class FlowModel():
         self.origin = Origin("Time Step")
         self.currencies: List[Currency] = []
         self.sources: List[Source] = []
-        self.targets: List[Target] = []
         self.connections: List[Connection] = []
 
     def add_currency(self, currency: Currency):
@@ -31,19 +30,11 @@ class FlowModel():
         for callback in self.__callbacks:
             callback(self)
 
-    def add_target(self, target: Target):
-        """Adds a target to the flow model"""
-        self.targets.append(target)
-        for callback in self.__callbacks:
-            callback(self)
-
     def add_edge(self, source: Component, target: Component):
         """Adds a default connection to the flow model"""
         if isinstance(source, Source) and isinstance(target, Source):
             return
         if isinstance(source, Currency) and isinstance(target, Currency):
-            return
-        if isinstance(source, Target):
             return
         if isinstance(target, Origin):
             return
@@ -60,7 +51,7 @@ class FlowModel():
 
     def get_components(self) -> List[Component]:
         """Returns list of all components"""
-        return [self.origin] + self.currencies + self.sources + self.targets
+        return [self.origin] + self.currencies + self.sources
 
     def move_component_position(self, component: Component, dpos: Position):
         """Sets new position for flow model component"""
@@ -75,9 +66,7 @@ class FlowModel():
             self.delete_connection(connection, notify=False)
         for connection in component.connections[:]:
             self.delete_connection(connection, notify=False)
-        if isinstance(component, Target):
-            self.targets.remove(component)
-        elif isinstance(component, Source):
+        if isinstance(component, Source):
             self.sources.remove(component)
         elif isinstance(component, Currency):
             self.currencies.remove(component)
@@ -103,7 +92,6 @@ class FlowModel():
             'origin': self.origin.to_dict(),
             'currencies': [c.to_dict() for c in self.currencies],
             'sources': [s.to_dict() for s in self.sources],
-            'targets': [t.to_dict() for t in self.targets],
             'connections': [c.to_dict() for c in self.connections]
         }
         with open(filename, 'w', encoding = 'utf-8') as file:
@@ -130,15 +118,6 @@ class FlowModel():
                     self.add_currency(currency)
                 except (KeyError, IndexError) as exc:
                     raise RuntimeError('Error loading currency. Malformed yaml file.') from exc
-        if 'targets' in model_dict:
-            self.targets = []
-            for data in model_dict['targets']:
-                try:
-                    target = Target(data['name'], Position(data['pos'][0], data['pos'][1]))
-                    target.id = data['_id']
-                    self.add_target(target)
-                except (KeyError, IndexError) as exc:
-                    raise RuntimeError('Error loading target. Malformed yaml file.') from exc
         if 'sources' in model_dict:
             self.sources = []
             for data in model_dict['sources']:

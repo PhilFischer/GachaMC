@@ -6,7 +6,7 @@ from PySide2.QtGui import QPixmap, QMouseEvent, QWheelEvent
 from PySide2.QtWidgets import QLabel, QSizePolicy
 
 from gmc.flow_model import FlowModel
-from gmc.components import Position, Currency, Origin, Source, Target
+from gmc.components import Position, Currency, Origin, Source
 from ui.constants import PRIMARY_COLOR, BACKGROUND_COLOR
 from ui.painter import Painter
 
@@ -32,7 +32,6 @@ class CentralCanvas(QLabel):
         self.__origin = Position(0, 0)
         self.__currencies = []
         self.__sources = []
-        self.__targets = []
         self.__connections = []
         self.__drag_start = Position()
 
@@ -41,7 +40,6 @@ class CentralCanvas(QLabel):
         self.__origin = flow_model.origin
         self.__currencies = flow_model.currencies
         self.__sources = flow_model.sources
-        self.__targets = flow_model.targets
         self.__connections = flow_model.connections
         self.__redraw()
 
@@ -66,7 +64,6 @@ class CentralCanvas(QLabel):
     def connect_drag(self, callback: Callable):
         """Add a callback for dragging items"""
         self.__drag_callbacks.append(callback)
-
 
     def mousePressEvent(self, ev: QMouseEvent):
         pos = self.screen_to_world(ev.pos().x(), ev.pos().y())
@@ -110,18 +107,14 @@ class CentralCanvas(QLabel):
             painter.drawCurrency(currency)
         for source in self.__sources:
             painter.drawSource(source)
-        for target in self.__targets:
-            painter.drawTarget(target)
         if not self.selected_object is None and isinstance(self.selected_object, Origin):
             painter.drawOrigin(self.selected_object.pos, highlight=True)
         elif not self.selected_object is None and isinstance(self.selected_object, Currency):
             painter.drawCurrency(self.selected_object, highlight=True)
-        elif not self.selected_object is None and isinstance(self.selected_object, Target):
-            painter.drawTarget(self.selected_object, highlight=True)
         elif not self.selected_object is None and isinstance(self.selected_object, Source):
             painter.drawSource(self.selected_object, highlight=True)
         painter.end()
         self.setPixmap(canvas)
 
     def __components(self):
-        return [self.__origin] + self.__currencies + self.__sources + self.__targets
+        return [self.__origin] + self.__currencies + self.__sources
