@@ -70,8 +70,9 @@ class Connection():
 class Currency(Component):
     """GMC Currency Class"""
 
-    def __init__(self, name: str, position: Position = None):
+    def __init__(self, name: str, position: Position = None, target_value: float = 0):
         super().__init__(name, position)
+        self.target_value = target_value
         if name == "":
             raise ValueError('Currency name cannot be empty!')
 

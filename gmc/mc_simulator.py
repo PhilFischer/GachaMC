@@ -16,9 +16,10 @@ class Simulator():
         for comp in model.get_components():
             self._graph.add_node(comp.id, name=comp.name)
         for connection in model.connections:
-            self._graph.add_edge(connection.source.id, connection.target.id, weight=connection.output_rate/connection.input_rate)
+            self._graph.add_edge(connection.source.id, connection.target.id, weight=connection.input_rate/connection.output_rate)
 
     def draw_flow_graph(self, axes: Axes):
         """Draw flow graph using Matplotlib Axes object"""
-        nx.draw_networkx(self._graph, ax=axes, pos={self._origin: (0,0)}, with_labels=False, node_color=PRIMARY_COLOR)
+        layout = nx.spring_layout(self._graph, weight=None)
+        nx.draw_networkx(self._graph, ax=axes, pos=layout, with_labels=False, node_color=PRIMARY_COLOR, edge_color=PRIMARY_COLOR)
         axes.set_facecolor(BACKGROUND_COLOR)

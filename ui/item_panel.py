@@ -5,7 +5,7 @@ from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QWidget, QScrollArea, QHBoxLayout, QVBoxLayout, QLabel, QFrame, QPushButton, QToolButton, QDoubleSpinBox
 
 from ui.constants import DANGER_COLOR
-from gmc.components import Component, Connection, Source, Currency
+from gmc.components import Component, Connection, Source, Currency, Origin
 
 
 class InputWidget(QWidget):
@@ -158,6 +158,7 @@ class CurrencyPanel(QWidget):
 
     def __init__(self, currency: Currency):
         super().__init__()
+        self.currency = currency
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -174,6 +175,39 @@ class CurrencyPanel(QWidget):
         sep1.setFrameShape(QFrame.HLine)
         layout.addWidget(sep1)
         layout.addSpacing(18)
+
+        title = QLabel('Target Value')
+        layout.addWidget(title)
+
+        edit = QDoubleSpinBox()
+        edit.setValue(currency.target_value)
+        edit.setMinimum(1)
+        edit.setMaximum(10000)
+        edit.wheelEvent = lambda event: None
+        edit.valueChanged.connect(self.change_value)
+        layout.addWidget(edit)
+
+    def change_value(self, value):
+        """Resolve change target value event"""
+        self.currency.target_value = value
+
+
+class OriginPanel(QWidget):
+    """Origin Panel Class"""
+
+    def __init__(self, origin: Origin):
+        super().__init__()
+
+        layout = QVBoxLayout()
+        self.setLayout(layout)
+
+        title = QLabel('Currency Node')
+        title.setStyleSheet('font-size: 10pt;')
+        layout.addWidget(title)
+
+        name = QLabel(origin.name)
+        name.setStyleSheet('font-size: 16pt;')
+        layout.addWidget(name)
 
 
 class ItemPanel(QScrollArea):
@@ -204,13 +238,16 @@ class ItemPanel(QScrollArea):
         if prev is not None:
             prev.widget().deleteLater()
 
-        if isinstance(item, Source):
+        if isinstance(item, Origin):
+            panel = OriginPanel(item)
+            self.content.addWidget(panel)
+        elif isinstance(item, Currency):
+            panel = CurrencyPanel(item)
+            self.content.addWidget(panel)
+        elif isinstance(item, Source):
             panel = SourcePanel(item)
             panel.connection_deleted.connect(self.updated.emit)
             panel.deleted.connect(self.deleted.emit)
             panel.add_input.connect(self.add_input.emit)
             panel.add_connection.connect(self.add_connection.emit)
-            self.content.addWidget(panel)
-        elif isinstance(item, Currency):
-            panel = CurrencyPanel(item)
             self.content.addWidget(panel)
