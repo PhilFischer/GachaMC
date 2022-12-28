@@ -47,7 +47,7 @@ class Component():
 
     def to_dict(self):
         """Converts the component into a dictionary"""
-        return {'_id': self._id, 'name': self.name, 'pos': (self.pos.x, self.pos.y)}
+        return {'_id': self.id, 'name': self.name, 'pos': (self.pos.x, self.pos.y)}
 
 
 class Connection():
@@ -64,7 +64,7 @@ class Connection():
     # pylint: disable=protected-access
     def to_dict(self):
         """Converts the connection into a dictionary"""
-        return {'source': self.source._id, 'target': self.target._id, 'output': self.output_rate, 'input': self.input_rate}
+        return {'source': self.source.id, 'target': self.target.id, 'output': self.output_rate, 'input': self.input_rate}
 
 
 class Currency(Component):
@@ -75,6 +75,12 @@ class Currency(Component):
         self.target_value = target_value
         if name == "":
             raise ValueError('Currency name cannot be empty!')
+
+    def to_dict(self):
+        """Converts the currency into a dictionary"""
+        dictionary = super().to_dict()
+        dictionary['target_value'] = self.target_value
+        return dictionary
 
 
 class Origin(Currency):

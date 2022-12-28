@@ -27,9 +27,9 @@ class InputWidget(QWidget):
         layout.addWidget(control_widget)
 
         edit = QDoubleSpinBox()
-        edit.setValue(connection.output_rate)
         edit.setMinimum(0.01)
         edit.setMaximum(10000)
+        edit.setValue(connection.output_rate)
         edit.wheelEvent = lambda event: None
         edit.valueChanged.connect(self.change_value)
         controls.addWidget(edit)
@@ -65,9 +65,9 @@ class OutputWidget(QWidget):
         layout.addWidget(control_widget)
 
         edit = QDoubleSpinBox()
-        edit.setValue(connection.input_rate)
         edit.setMinimum(0.01)
         edit.setMaximum(10000)
+        edit.setValue(connection.input_rate)
         edit.wheelEvent = lambda event: None
         edit.valueChanged.connect(self.change_value)
         controls.addWidget(edit)
@@ -180,12 +180,17 @@ class CurrencyPanel(QWidget):
         layout.addWidget(title)
 
         edit = QDoubleSpinBox()
+        edit.setMinimum(0)
+        edit.setMaximum(1000000)
         edit.setValue(currency.target_value)
-        edit.setMinimum(1)
-        edit.setMaximum(10000)
         edit.wheelEvent = lambda event: None
         edit.valueChanged.connect(self.change_value)
         layout.addWidget(edit)
+
+        delete_button = QPushButton('Delete')
+        delete_button.setStyleSheet(f"color: {DANGER_COLOR}; border: 2px solid {DANGER_COLOR};")
+        self.deleted = delete_button.clicked
+        layout.addWidget(delete_button)
 
     def change_value(self, value):
         """Resolve change target value event"""
@@ -243,6 +248,7 @@ class ItemPanel(QScrollArea):
             self.content.addWidget(panel)
         elif isinstance(item, Currency):
             panel = CurrencyPanel(item)
+            panel.deleted.connect(self.deleted.emit)
             self.content.addWidget(panel)
         elif isinstance(item, Source):
             panel = SourcePanel(item)
