@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import List, Callable
 import yaml
 
-from gmc.components import Position, Component, Connection, Currency, Origin, Source
+from gmc.components import Position, Component, Connection, Currency, Source
 
 
 class FlowModel():
@@ -13,7 +13,6 @@ class FlowModel():
 
     def __init__(self):
         self.__callbacks: List[Callable] = []
-        self.origin = Origin("Time Step")
         self.currencies: List[Currency] = []
         self.sources: List[Source] = []
         self.connections: List[Connection] = []
@@ -36,8 +35,6 @@ class FlowModel():
             return
         if isinstance(source, Currency) and isinstance(target, Currency):
             return
-        if isinstance(target, Origin):
-            return
         connection = Connection(source, target)
         self.connections.append(connection)
         for callback in self.__callbacks:
@@ -51,7 +48,7 @@ class FlowModel():
 
     def get_components(self) -> List[Component]:
         """Returns list of all components"""
-        return [self.origin] + self.currencies + self.sources
+        return self.currencies + self.sources
 
     def move_component_position(self, component: Component, dpos: Position):
         """Sets new position for flow model component"""
@@ -89,7 +86,6 @@ class FlowModel():
     def save_to_file(self, filename: str):
         """Saves a flow model to a yaml file"""
         model_dict = {
-            'origin': self.origin.to_dict(),
             'currencies': [c.to_dict() for c in self.currencies],
             'sources': [s.to_dict() for s in self.sources],
             'connections': [c.to_dict() for c in self.connections]
@@ -102,18 +98,11 @@ class FlowModel():
         model_dict = {}
         with open(filename, 'r', encoding = 'utf-8') as file:
             model_dict = yaml.load(file, yaml.FullLoader)
-        if 'origin' in model_dict:
-            try:
-                origin = model_dict['origin']
-                self.origin = Origin(origin['name'], Position(origin['pos'][0], origin['pos'][1]))
-                self.origin.id = origin['_id']
-            except (KeyError, IndexError) as exc:
-                raise RuntimeError('Error loading origin. Malformed yaml file.') from exc
         if 'currencies' in model_dict:
             self.currencies = []
             for data in model_dict['currencies']:
                 try:
-                    currency = Currency(data['name'], Position(data['pos'][0], data['pos'][1]))
+                    currency = Currency(data['name'], Position(data['pos'][0], data['pos'][1]), target_value=data['target_value'])
                     currency.id = data['_id']
                     self.add_currency(currency)
                 except (KeyError, IndexError) as exc:
@@ -122,7 +111,7 @@ class FlowModel():
             self.sources = []
             for data in model_dict['sources']:
                 try:
-                    source = Source(data['name'], Position(data['pos'][0], data['pos'][1]))
+                    source = Source(data['name'], Position(data['pos'][0], data['pos'][1]), time_step=data['time_step'])
                     source.id = data['_id']
                     self.add_source(source)
                 except (KeyError, IndexError) as exc:

@@ -6,7 +6,7 @@ from PySide2.QtGui import QPixmap, QMouseEvent, QWheelEvent
 from PySide2.QtWidgets import QLabel, QSizePolicy
 
 from gmc.flow_model import FlowModel
-from gmc.components import Position, Currency, Origin, Source
+from gmc.components import Position, Currency, Source
 from ui.constants import PRIMARY_COLOR, BACKGROUND_COLOR
 from ui.painter import Painter
 
@@ -29,7 +29,6 @@ class CentralCanvas(QLabel):
         self.__selection_callbacks = []
         self.__drag_callbacks = []
 
-        self.__origin = Position(0, 0)
         self.__currencies = []
         self.__sources = []
         self.__connections = []
@@ -37,7 +36,6 @@ class CentralCanvas(QLabel):
 
     def draw_flow_model(self, flow_model: FlowModel) -> None:
         """Draws a flow model"""
-        self.__origin = flow_model.origin
         self.__currencies = flow_model.currencies
         self.__sources = flow_model.sources
         self.__connections = flow_model.connections
@@ -102,14 +100,11 @@ class CentralCanvas(QLabel):
         painter = Painter(canvas, self)
         for connection in self.__connections:
             painter.drawEdge(connection)
-        painter.drawOrigin(self.__origin.pos)
         for currency in self.__currencies:
             painter.drawCurrency(currency)
         for source in self.__sources:
             painter.drawSource(source)
-        if not self.selected_object is None and isinstance(self.selected_object, Origin):
-            painter.drawOrigin(self.selected_object.pos, highlight=True)
-        elif not self.selected_object is None and isinstance(self.selected_object, Currency):
+        if not self.selected_object is None and isinstance(self.selected_object, Currency):
             painter.drawCurrency(self.selected_object, highlight=True)
         elif not self.selected_object is None and isinstance(self.selected_object, Source):
             painter.drawSource(self.selected_object, highlight=True)
@@ -117,4 +112,4 @@ class CentralCanvas(QLabel):
         self.setPixmap(canvas)
 
     def __components(self):
-        return [self.__origin] + self.__currencies + self.__sources
+        return self.__currencies + self.__sources

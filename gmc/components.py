@@ -83,16 +83,19 @@ class Currency(Component):
         return dictionary
 
 
-class Origin(Currency):
-    """GMC Origin Class"""
-
-
 class Source(Component):
     """GMC Source Class"""
 
     SIZE = 0.36
 
-    def __init__(self, name: str, position: Position = None):
+    def __init__(self, name: str, position: Position = None, time_step: float = 1):
         super().__init__(name, position)
+        self.time_step = time_step
         if name == "":
             raise ValueError('Source name cannot be empty!')
+
+    def to_dict(self):
+        """Converts the source into a dictionary"""
+        dictionary = super().to_dict()
+        dictionary['time_step'] = self.time_step
+        return dictionary

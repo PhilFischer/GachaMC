@@ -5,7 +5,7 @@ from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QWidget, QScrollArea, QHBoxLayout, QVBoxLayout, QLabel, QFrame, QPushButton, QToolButton, QDoubleSpinBox
 
 from ui.constants import DANGER_COLOR
-from gmc.components import Component, Connection, Source, Currency, Origin
+from gmc.components import Component, Connection, Source, Currency
 
 
 class InputWidget(QWidget):
@@ -91,6 +91,7 @@ class SourcePanel(QWidget):
 
     def __init__(self, source: Source):
         super().__init__()
+        self.source = source
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -108,6 +109,22 @@ class SourcePanel(QWidget):
         layout.addWidget(sep1)
         layout.addSpacing(18)
 
+        time_label = QLabel('Time Step')
+        layout.addWidget(time_label)
+
+        edit = QDoubleSpinBox()
+        edit.setMinimum(0)
+        edit.setMaximum(1000)
+        edit.setValue(source.time_step)
+        edit.wheelEvent = lambda event: None
+        edit.valueChanged.connect(self.change_value)
+        layout.addWidget(edit)
+
+        sep2 = QFrame()
+        sep2.setFrameShape(QFrame.HLine)
+        layout.addWidget(sep2)
+        layout.addSpacing(18)
+
         text1 = QLabel("Inputs")
         text1.setStyleSheet('font-size: 12pt;')
         layout.addWidget(text1)
@@ -121,9 +138,9 @@ class SourcePanel(QWidget):
         self.add_input = input_button.clicked
         layout.addWidget(input_button)
 
-        sep2 = QFrame()
-        sep2.setFrameShape(QFrame.HLine)
-        layout.addWidget(sep2)
+        sep3 = QFrame()
+        sep3.setFrameShape(QFrame.HLine)
+        layout.addWidget(sep3)
         layout.addSpacing(18)
 
         text2 = QLabel("Outputs")
@@ -148,6 +165,10 @@ class SourcePanel(QWidget):
         delete_button.setStyleSheet(f"color: {DANGER_COLOR}; border: 2px solid {DANGER_COLOR};")
         self.deleted = delete_button.clicked
         layout.addWidget(delete_button)
+
+    def change_value(self, value):
+        """Resolve change time step value event"""
+        self.source.time_step = value
 
     def _notify_connection_deleted(self, connection: Connection):
         return lambda: self.connection_deleted.emit(connection)
@@ -176,8 +197,8 @@ class CurrencyPanel(QWidget):
         layout.addWidget(sep1)
         layout.addSpacing(18)
 
-        title = QLabel('Target Value')
-        layout.addWidget(title)
+        target_label = QLabel('Target Value')
+        layout.addWidget(target_label)
 
         edit = QDoubleSpinBox()
         edit.setMinimum(0)
@@ -187,6 +208,11 @@ class CurrencyPanel(QWidget):
         edit.valueChanged.connect(self.change_value)
         layout.addWidget(edit)
 
+        sep2 = QFrame()
+        sep2.setFrameShape(QFrame.HLine)
+        layout.addWidget(sep2)
+        layout.addSpacing(18)
+
         delete_button = QPushButton('Delete')
         delete_button.setStyleSheet(f"color: {DANGER_COLOR}; border: 2px solid {DANGER_COLOR};")
         self.deleted = delete_button.clicked
@@ -195,24 +221,6 @@ class CurrencyPanel(QWidget):
     def change_value(self, value):
         """Resolve change target value event"""
         self.currency.target_value = value
-
-
-class OriginPanel(QWidget):
-    """Origin Panel Class"""
-
-    def __init__(self, origin: Origin):
-        super().__init__()
-
-        layout = QVBoxLayout()
-        self.setLayout(layout)
-
-        title = QLabel('Currency Node')
-        title.setStyleSheet('font-size: 10pt;')
-        layout.addWidget(title)
-
-        name = QLabel(origin.name)
-        name.setStyleSheet('font-size: 16pt;')
-        layout.addWidget(name)
 
 
 class ItemPanel(QScrollArea):
@@ -243,10 +251,7 @@ class ItemPanel(QScrollArea):
         if prev is not None:
             prev.widget().deleteLater()
 
-        if isinstance(item, Origin):
-            panel = OriginPanel(item)
-            self.content.addWidget(panel)
-        elif isinstance(item, Currency):
+        if isinstance(item, Currency):
             panel = CurrencyPanel(item)
             panel.deleted.connect(self.deleted.emit)
             self.content.addWidget(panel)
