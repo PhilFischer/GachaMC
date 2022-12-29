@@ -29,7 +29,7 @@ class InputWidget(QWidget):
         edit = QDoubleSpinBox()
         edit.setMinimum(0.01)
         edit.setMaximum(10000)
-        edit.setValue(connection.output_rate)
+        edit.setValue(connection.rate)
         edit.wheelEvent = lambda event: None
         edit.valueChanged.connect(self.change_value)
         controls.addWidget(edit)
@@ -43,7 +43,7 @@ class InputWidget(QWidget):
 
     def change_value(self, value):
         """Resolve change value event"""
-        self.connection.output_rate = value
+        self.connection.rate = value
 
 
 class OutputWidget(QWidget):
@@ -67,7 +67,7 @@ class OutputWidget(QWidget):
         edit = QDoubleSpinBox()
         edit.setMinimum(0.01)
         edit.setMaximum(10000)
-        edit.setValue(connection.input_rate)
+        edit.setValue(connection.rate)
         edit.wheelEvent = lambda event: None
         edit.valueChanged.connect(self.change_value)
         controls.addWidget(edit)
@@ -81,7 +81,7 @@ class OutputWidget(QWidget):
 
     def change_value(self, value):
         """Resolve change value event"""
-        self.connection.input_rate = value
+        self.connection.rate = value
 
 
 class SourcePanel(QWidget):

@@ -127,7 +127,7 @@ class FlowModel():
                 try:
                     source = next(s for s in self.get_components() if s.id == data['source'])
                     target = next(t for t in self.get_components() if t.id == data['target'])
-                    connection = Connection(source, target, data['input'], data['output'])
+                    connection = Connection(source, target, rate=data['rate'])
                     self.add_connection(connection)
                 except (KeyError, IndexError) as exc:
                     raise RuntimeError('Error loading connection. Malformed yaml file.') from exc

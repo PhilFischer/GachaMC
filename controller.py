@@ -99,14 +99,16 @@ class Controller():
     def save_model(self):
         """Resolve save model event"""
         filename = QFileDialog.getSaveFileName(caption = 'Save Model Graph', dir = 'model.yaml', filter = 'YAML (*.yaml);;All Files (*.*)')
-        self.model.save_to_file(filename[0])
+        if len(filename[0]) > 0:
+            self.model.save_to_file(filename[0])
 
     def load_model(self):
         """Resolve load model event"""
         filename = QFileDialog.getOpenFileName(caption = 'Load Model Graph', filter = 'YAML (*.yaml);;All Files (*.*)')
-        self.model.load_from_file(filename[0])
-        self.model.normalize_positions()
-        self.canvas.translate_center(-self.canvas.center())
+        if len(filename[0]) > 0:
+            self.model.load_from_file(filename[0])
+            self.model.normalize_positions()
+            self.canvas.translate_center(-self.canvas.center())
 
     def open_simulation_window(self):
         """Resolve start simulation event"""

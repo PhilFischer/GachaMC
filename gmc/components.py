@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+from typing import List
 
 
 class Position():
@@ -31,10 +32,10 @@ class Component():
 
     def __init__(self, name: str, position: Position = None):
         self.id = uuid.uuid4().hex  # pylint: disable=invalid-name
-        self.name = name
-        self.pos = position if position is not None else Position()
-        self.inputs = []
-        self.connections = []
+        self.name: str = name
+        self.pos: Position = position if position is not None else Position()
+        self.inputs: List[Connection] = []
+        self.connections: List[Connection] = []
 
     def add_input(self, connection: Connection):
         """Add input connection to component"""
@@ -61,18 +62,17 @@ class Component():
 class Connection():
     """GMC Connection Class"""
 
-    def __init__(self, source: Component, target: Component, input_rate: float = 1, output_rate: float = 1):
-        self.source = source
-        self.target = target
-        self.input_rate = input_rate
-        self.output_rate = output_rate
+    def __init__(self, source: Component, target: Component, rate: float = 1):
+        self.source: Component = source
+        self.target: Component = target
+        self.rate: float = rate
         source.add_connection(self)
         target.add_input(self)
 
     # pylint: disable=protected-access
     def to_dict(self):
         """Converts the connection into a dictionary"""
-        return {'source': self.source.id, 'target': self.target.id, 'output': self.output_rate, 'input': self.input_rate}
+        return {'source': self.source.id, 'target': self.target.id, 'rate': self.rate}
 
 
 class Currency(Component):
@@ -80,7 +80,7 @@ class Currency(Component):
 
     def __init__(self, name: str, position: Position = None, target_value: float = 0):
         super().__init__(name, position)
-        self.target_value = target_value
+        self.target_value: float = target_value
         if name == "":
             raise ValueError('Currency name cannot be empty!')
 
@@ -98,7 +98,7 @@ class Source(Component):
 
     def __init__(self, name: str, position: Position = None, time_step: float = 1):
         super().__init__(name, position)
-        self.time_step = time_step
+        self.time_step: float = time_step
         if name == "":
             raise ValueError('Source name cannot be empty!')
 
