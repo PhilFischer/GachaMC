@@ -16,9 +16,7 @@ class Simulator():
         self._graph = self._build_networkx_graph(model)
         self._b, inc_inp, inc_out = self._build_flow_matrices(model)
         self._A = inc_inp - inc_out  # pylint: disable=invalid-name
-        print(self._A)
-        res = self.compute_max_flow()
-        print(res)
+        self._source_rates = None
 
     @staticmethod
     def _build_flow_matrices(model: FlowModel):
@@ -41,31 +39,31 @@ class Simulator():
     @staticmethod
     def _build_networkx_graph(model: FlowModel):
         graph = nx.DiGraph()
-        graph.add_node('origin', name='origin')
         graph.add_node('drain', name='drain')
         for source in model.sources:
             graph.add_node(source.id, name=source.name)
-            if source.time_step > 0:
-                graph.add_edge('origin', source.id, capacity=source.time_step)
         for currency in model.currencies:
             graph.add_node(currency.id, name=currency.name)
             if currency.target_value > 0:
-                graph.add_edge(currency.id, 'drain', capacity=1)
+                graph.add_edge(currency.id, 'drain')
         for connection in model.connections:
             graph.add_edge(connection.source.id, connection.target.id, capacity=connection.rate)
         return graph
 
     def compute_max_flow(self):
         """Finds maximum model flow using linear programming"""
-        target = np.zeros_like(self._b)
+        nc, ns = self._A.shape
+        target = np.zeros(ns)
         target[-1] = 1.
-        bounds = np.stack([np.zeros_like(self._b), self._b], axis=1)
-        result = linprog(-target, -self._A, np.zeros(self._A.shape[0]), bounds=bounds)
+        bounds = np.stack([np.zeros(ns), self._b], axis=1)
+        result = linprog(-target, -self._A, np.zeros(nc), bounds=bounds)
+        result = linprog(np.ones(ns), -self._A, np.zeros(nc), target.reshape((1, -1)), result.x[-1], bounds=bounds)
         ret = {'status': result.status, 'message': result.message}
         if result.status == 0:
-            ret['steps'] = 1. / result.x[-1]
+            ret['steps'] = 1. / result.x[-1] if result.x[-1] > 0 else 0.
             ret['s'] = result.x[:-1]
             ret['c'] = np.matmul(self._A, result.x)
+            self._source_rates = result.x[:-1]
         return ret
 
     def draw_flow_graph(self, axes: Axes):

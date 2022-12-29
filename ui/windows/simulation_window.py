@@ -3,7 +3,7 @@
 import matplotlib
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
-from PySide2.QtWidgets import QWidget, QGridLayout, QLabel
+from PySide2.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QLabel
 
 from ui.constants import BACKGROUND_COLOR
 from gmc.flow_model import FlowModel
@@ -26,7 +26,7 @@ class SimulationWindow(QWidget):
 
     def __init__(self, model: FlowModel):
         super().__init__(parent=None)
-        self._simulator = Simulator(model.copy())
+        self.simulator = Simulator(model.copy())
 
         layout = QGridLayout()
         self.setLayout(layout)
@@ -39,9 +39,25 @@ class SimulationWindow(QWidget):
         layout.addWidget(title, 0, 0)
 
         plot = MplCanvas()
-        self._simulator.draw_flow_graph(plot.axes)
+        self.simulator.draw_flow_graph(plot.axes)
         layout.addWidget(plot, 1, 0)
 
-        plot2 = MplCanvas()
-        self._simulator.draw_flow_graph(plot2.axes)
-        layout.addWidget(plot2, 1, 1)
+        info = QVBoxLayout()
+        flow = self.simulator.compute_max_flow()
+        if flow['status'] == 0:
+            max_panel = QLabel(f"Target Time: {flow['steps']} time steps")
+            max_panel.setStyleSheet('font-size: 14pt;')
+            info.addWidget(max_panel)
+            status_panel = QLabel(flow['message'])
+            status_panel.setWordWrap(True)
+            status_panel.setStyleSheet('background-color: green; padding: 8px 5px 8px 5px;')
+            info.addWidget(status_panel)
+        else:
+            status_panel = QLabel(flow['message'])
+            status_panel.setWordWrap(True)
+            status_panel.setStyleSheet('background-color: green; padding: 8px 5px 8px 5px;')
+            info.addWidget(status_panel)
+        info.addStretch()
+        info_widget = QWidget()
+        info_widget.setLayout(info)
+        layout.addWidget(info_widget, 1, 1)
