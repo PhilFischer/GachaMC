@@ -88,6 +88,22 @@ class FlowModel():
         """Add a callback for model changes"""
         self.__callbacks.append(callback)
 
+    def copy(self):
+        """Return copy of this flow model"""
+        other = FlowModel()
+        for source in self.sources:
+            other_source = Source(source.name, source.pos, time_step=source.time_step)
+            other.add_source(other_source)
+        for currency in self.currencies:
+            other_currency = Currency(currency.name, currency.pos, target_value=currency.target_value)
+            other.add_currency(other_currency)
+        for connection in self.connections:
+            sid = self.get_components().index(connection.source)
+            tid = self.get_components().index(connection.target)
+            other_connection = Connection(other.get_components()[sid], other.get_components()[tid], rate=connection.rate)
+            other.add_connection(other_connection)
+        return other
+
     def save_to_file(self, filename: str):
         """Saves a flow model to a yaml file"""
         model_dict = {
@@ -131,3 +147,5 @@ class FlowModel():
                     self.add_connection(connection)
                 except (KeyError, IndexError) as exc:
                     raise RuntimeError('Error loading connection. Malformed yaml file.') from exc
+        for callback in self.__callbacks:
+            callback(self)

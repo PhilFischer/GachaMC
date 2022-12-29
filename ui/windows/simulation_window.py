@@ -26,7 +26,7 @@ class SimulationWindow(QWidget):
 
     def __init__(self, model: FlowModel):
         super().__init__(parent=None)
-        self._simulator = Simulator(model)
+        self._simulator = Simulator(model.copy())
 
         layout = QGridLayout()
         self.setLayout(layout)
