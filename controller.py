@@ -105,6 +105,8 @@ class Controller():
         """Resolve load model event"""
         filename = QFileDialog.getOpenFileName(caption = 'Load Model Graph', filter = 'YAML (*.yaml);;All Files (*.*)')
         self.model.load_from_file(filename[0])
+        self.model.normalize_positions()
+        self.canvas.translate_center(-self.canvas.center())
 
     def open_simulation_window(self):
         """Resolve start simulation event"""

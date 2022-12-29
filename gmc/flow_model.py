@@ -52,8 +52,7 @@ class FlowModel():
 
     def move_component_position(self, component: Component, dpos: Position):
         """Sets new position for flow model component"""
-        component.pos.x += dpos.x
-        component.pos.y += dpos.y
+        component.pos.translate(dpos)
         for callback in self.__callbacks:
             callback(self)
 
@@ -78,6 +77,12 @@ class FlowModel():
         if notify:
             for callback in self.__callbacks:
                 callback(self)
+
+    def normalize_positions(self):
+        """Shift component positions such that the first component has position (0,0)"""
+        dpos = self.get_components()[0].pos
+        for component in reversed(self.get_components()):
+            self.move_component_position(component, -dpos)
 
     def connect(self, callback: Callable):
         """Add a callback for model changes"""

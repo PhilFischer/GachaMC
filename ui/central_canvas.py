@@ -45,6 +45,11 @@ class CentralCanvas(QLabel):
         """Returns center position"""
         return Position(self.__center.x, self.__center.y)
 
+    def translate_center(self, dpos: Position):
+        """Translate canvas center by given position"""
+        self.__center.translate(dpos)
+        self.__redraw()
+
     def screen_to_world(self, x: int, y: int) -> Position:
         """Maps screen coordinates on the canvas to world coordinates"""
         width, height = self.pixmap().width(), self.pixmap().height()

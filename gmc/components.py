@@ -12,8 +12,16 @@ class Position():
         self.x = x
         self.y = y
 
+    def __neg__(self):
+        return Position(-self.x, -self.y)
+
     def __str__(self):
         return f"({self.x}, {self.y})"
+
+    def translate(self, other: Position):
+        """Translates the position by the values of other"""
+        self.x += other.x
+        self.y += other.y
 
 
 class Component():
