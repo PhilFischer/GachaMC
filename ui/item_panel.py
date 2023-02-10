@@ -4,7 +4,7 @@ from PySide2.QtCore import Qt, QSize, Signal
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QWidget, QScrollArea, QHBoxLayout, QVBoxLayout, QLabel, QFrame, QPushButton, QToolButton, QDoubleSpinBox
 
-from ui.constants import DANGER_COLOR
+from ui.constants import PRIMARY_COLOR, DANGER_COLOR
 from gmc.components import Component, Connection, Source, Currency
 
 
@@ -30,6 +30,7 @@ class InputWidget(QWidget):
         edit.setMinimum(0.01)
         edit.setMaximum(10000)
         edit.setValue(connection.rate)
+        edit.setStyleSheet(f"color: {PRIMARY_COLOR}")
         edit.wheelEvent = lambda event: None
         edit.valueChanged.connect(self.change_value)
         controls.addWidget(edit)
@@ -68,6 +69,7 @@ class OutputWidget(QWidget):
         edit.setMinimum(0.01)
         edit.setMaximum(10000)
         edit.setValue(connection.rate)
+        edit.setStyleSheet(f"color: {PRIMARY_COLOR}")
         edit.wheelEvent = lambda event: None
         edit.valueChanged.connect(self.change_value)
         controls.addWidget(edit)
@@ -116,6 +118,7 @@ class SourcePanel(QWidget):
         edit.setMinimum(0)
         edit.setMaximum(1000)
         edit.setValue(source.time_step)
+        edit.setStyleSheet(f"color: {PRIMARY_COLOR}")
         edit.wheelEvent = lambda event: None
         edit.valueChanged.connect(self.change_value)
         layout.addWidget(edit)
@@ -204,6 +207,7 @@ class CurrencyPanel(QWidget):
         edit.setMinimum(0)
         edit.setMaximum(1000000)
         edit.setValue(currency.target_value)
+        edit.setStyleSheet(f"color: {PRIMARY_COLOR}")
         edit.wheelEvent = lambda event: None
         edit.valueChanged.connect(self.change_value)
         layout.addWidget(edit)
