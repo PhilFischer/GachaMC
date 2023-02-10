@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import uuid
+import math
+from typing import List
 
 
 class Position():
@@ -12,8 +14,24 @@ class Position():
         self.x = x
         self.y = y
 
+    def __neg__(self):
+        return Position(-self.x, -self.y)
+
     def __str__(self):
         return f"({self.x}, {self.y})"
+
+    def coords(self):
+        """Returns coordinates as tuple"""
+        return self.x, self.y
+
+    def distance(self, other: Position):
+        """Returns distance to other position"""
+        return math.sqrt((self.x-other.x)**2 + (self.y-other.y)**2)
+
+    def translate(self, other: Position):
+        """Translates the position by the values of other"""
+        self.x += other.x
+        self.y += other.y
 
 
 class Component():
@@ -23,10 +41,10 @@ class Component():
 
     def __init__(self, name: str, position: Position = None):
         self.id = uuid.uuid4().hex  # pylint: disable=invalid-name
-        self.name = name
-        self.pos = position if position is not None else Position()
-        self.inputs = []
-        self.connections = []
+        self.name: str = name
+        self.pos: Position = position if position is not None else Position()
+        self.inputs: List[Connection] = []
+        self.connections: List[Connection] = []
 
     def add_input(self, connection: Connection):
         """Add input connection to component"""
@@ -47,37 +65,43 @@ class Component():
 
     def to_dict(self):
         """Converts the component into a dictionary"""
-        return {'_id': self._id, 'name': self.name, 'pos': (self.pos.x, self.pos.y)}
+        return {'_id': self.id, 'name': self.name, 'pos': (self.pos.x, self.pos.y)}
 
 
 class Connection():
     """GMC Connection Class"""
 
-    def __init__(self, source: Component, target: Component, input_rate: float = 1, output_rate: float = 1):
-        self.source = source
-        self.target = target
-        self.input_rate = input_rate
-        self.output_rate = output_rate
+    def __init__(self, source: Component, target: Component, rate: float = 1):
+        self.source: Component = source
+        self.target: Component = target
+        self.rate: float = rate
         source.add_connection(self)
         target.add_input(self)
+
+    def length(self):
+        """Returns length of the connection"""
+        return self.source.pos.distance(self.target.pos)
 
     # pylint: disable=protected-access
     def to_dict(self):
         """Converts the connection into a dictionary"""
-        return {'source': self.source._id, 'target': self.target._id, 'output': self.output_rate, 'input': self.input_rate}
+        return {'source': self.source.id, 'target': self.target.id, 'rate': self.rate}
 
 
 class Currency(Component):
     """GMC Currency Class"""
 
-    def __init__(self, name: str, position: Position = None):
+    def __init__(self, name: str, position: Position = None, target_value: float = 0):
         super().__init__(name, position)
+        self.target_value: float = target_value
         if name == "":
             raise ValueError('Currency name cannot be empty!')
 
-
-class Origin(Currency):
-    """GMC Origin Class"""
+    def to_dict(self):
+        """Converts the currency into a dictionary"""
+        dictionary = super().to_dict()
+        dictionary['target_value'] = self.target_value
+        return dictionary
 
 
 class Source(Component):
@@ -85,16 +109,14 @@ class Source(Component):
 
     SIZE = 0.36
 
-    def __init__(self, name: str, position: Position = None):
+    def __init__(self, name: str, position: Position = None, time_step: float = 1):
         super().__init__(name, position)
+        self.time_step: float = time_step
         if name == "":
             raise ValueError('Source name cannot be empty!')
 
-
-class Target(Source):
-    """GMC Target Class"""
-
-    def __init__(self, name: str, position: Position = None):
-        super().__init__(position)
-        if name == "":
-            raise ValueError('Target name cannot be empty!')
+    def to_dict(self):
+        """Converts the source into a dictionary"""
+        dictionary = super().to_dict()
+        dictionary['time_step'] = self.time_step
+        return dictionary

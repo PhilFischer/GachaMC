@@ -36,11 +36,6 @@ class MenuPanel(QWidget):
         self.add_source = source_button.clicked
         layout.addWidget(source_button)
 
-        target_button = QPushButton('Add Target')
-        target_button.setStyleSheet(f"color: {SECONDARY_COLOR}; border: 2px solid {SECONDARY_COLOR};")
-        self.add_target = target_button.clicked
-        layout.addWidget(target_button)
-
         separator = QFrame()
         separator.setFrameShape(QFrame.HLine)
         separator.setStyleSheet(f"border: 2px solid {PRIMARY_COLOR};")

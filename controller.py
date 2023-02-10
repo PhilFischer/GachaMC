@@ -1,11 +1,12 @@
 """Main Application Controller"""
 
-from PySide2.QtWidgets import QFileDialog
+from PySide2.QtGui import QGuiApplication
+from PySide2.QtCore import Qt, QTimer
+from PySide2.QtWidgets import QFileDialog, QStyle
 
 from ui.main_window import MainWindow
 from ui.dialogs.currency_dialog import CurrencyDialog
 from ui.dialogs.source_dialog import SourceDialog
-from ui.dialogs.target_dialog import TargetDialog
 from ui.windows.simulation_window import SimulationWindow
 from gmc.components import Component, Source, Currency
 from gmc.flow_model import FlowModel
@@ -24,7 +25,6 @@ class Controller():
 
         main_window.menu.add_currency.connect(self.add_currency_event)
         main_window.menu.add_source.connect(self.add_source_event)
-        main_window.menu.add_target.connect(self.add_target_event)
         main_window.menu.save_model.connect(self.save_model)
         main_window.menu.load_model.connect(self.load_model)
         main_window.start_simulation.connect(self.open_simulation_window)
@@ -56,14 +56,6 @@ class Controller():
             source = dialog.source()
             source.pos = self.canvas.center()
             self.model.add_source(source)
-
-    def add_target_event(self):
-        """Resolve add target event"""
-        dialog = TargetDialog()
-        if dialog.exec_():
-            target = dialog.target()
-            target.pos = self.canvas.center()
-            self.model.add_target(target)
 
     def delete_component(self):
         """Resolve delete component event"""
@@ -109,14 +101,34 @@ class Controller():
     def save_model(self):
         """Resolve save model event"""
         filename = QFileDialog.getSaveFileName(caption = 'Save Model Graph', dir = 'model.yaml', filter = 'YAML (*.yaml);;All Files (*.*)')
-        self.model.save_to_file(filename[0])
+        if len(filename[0]) > 0:
+            self.model.save_to_file(filename[0])
 
     def load_model(self):
         """Resolve load model event"""
         filename = QFileDialog.getOpenFileName(caption = 'Load Model Graph', filter = 'YAML (*.yaml);;All Files (*.*)')
-        self.model.load_from_file(filename[0])
+        if len(filename[0]) > 0:
+            self.model.load_from_file(filename[0])
+            self.model.normalize_positions()
+            self.canvas.translate_center(-self.canvas.center())
 
     def open_simulation_window(self):
         """Resolve start simulation event"""
+        if self.model.num_components() == 0 or len(self.model.connections) == 0:
+            return
         self._window = SimulationWindow(self.model)
+        QTimer.singleShot(0, lambda: Controller.center_window(self._window))
         self._window.show()
+
+    @staticmethod
+    def center_window(widget):
+        """Centers the application window"""
+        widget_window = widget.window()
+        widget_window.setGeometry(
+            QStyle.alignedRect(
+                Qt.LeftToRight,
+                Qt.AlignCenter,
+                widget_window.size(),
+                QGuiApplication.primaryScreen().availableGeometry(),
+            )
+        )

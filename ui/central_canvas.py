@@ -6,7 +6,7 @@ from PySide2.QtGui import QPixmap, QMouseEvent, QWheelEvent
 from PySide2.QtWidgets import QLabel, QSizePolicy
 
 from gmc.flow_model import FlowModel
-from gmc.components import Position, Currency, Origin, Source, Target
+from gmc.components import Position, Currency, Source
 from ui.constants import PRIMARY_COLOR, BACKGROUND_COLOR
 from ui.painter import Painter
 
@@ -29,25 +29,26 @@ class CentralCanvas(QLabel):
         self.__selection_callbacks = []
         self.__drag_callbacks = []
 
-        self.__origin = Position(0, 0)
         self.__currencies = []
         self.__sources = []
-        self.__targets = []
         self.__connections = []
         self.__drag_start = Position()
 
     def draw_flow_model(self, flow_model: FlowModel) -> None:
         """Draws a flow model"""
-        self.__origin = flow_model.origin
         self.__currencies = flow_model.currencies
         self.__sources = flow_model.sources
-        self.__targets = flow_model.targets
         self.__connections = flow_model.connections
         self.__redraw()
 
     def center(self) -> Position:
         """Returns center position"""
         return Position(self.__center.x, self.__center.y)
+
+    def translate_center(self, dpos: Position):
+        """Translate canvas center by given position"""
+        self.__center.translate(dpos)
+        self.__redraw()
 
     def screen_to_world(self, x: int, y: int) -> Position:
         """Maps screen coordinates on the canvas to world coordinates"""
@@ -66,7 +67,6 @@ class CentralCanvas(QLabel):
     def connect_drag(self, callback: Callable):
         """Add a callback for dragging items"""
         self.__drag_callbacks.append(callback)
-
 
     def mousePressEvent(self, ev: QMouseEvent):
         pos = self.screen_to_world(ev.pos().x(), ev.pos().y())
@@ -105,23 +105,16 @@ class CentralCanvas(QLabel):
         painter = Painter(canvas, self)
         for connection in self.__connections:
             painter.drawEdge(connection)
-        painter.drawOrigin(self.__origin.pos)
         for currency in self.__currencies:
             painter.drawCurrency(currency)
         for source in self.__sources:
             painter.drawSource(source)
-        for target in self.__targets:
-            painter.drawTarget(target)
-        if not self.selected_object is None and isinstance(self.selected_object, Origin):
-            painter.drawOrigin(self.selected_object.pos, highlight=True)
-        elif not self.selected_object is None and isinstance(self.selected_object, Currency):
+        if not self.selected_object is None and isinstance(self.selected_object, Currency):
             painter.drawCurrency(self.selected_object, highlight=True)
-        elif not self.selected_object is None and isinstance(self.selected_object, Target):
-            painter.drawTarget(self.selected_object, highlight=True)
         elif not self.selected_object is None and isinstance(self.selected_object, Source):
             painter.drawSource(self.selected_object, highlight=True)
         painter.end()
         self.setPixmap(canvas)
 
     def __components(self):
-        return [self.__origin] + self.__currencies + self.__sources + self.__targets
+        return self.__currencies + self.__sources

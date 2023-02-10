@@ -27,9 +27,9 @@ class InputWidget(QWidget):
         layout.addWidget(control_widget)
 
         edit = QDoubleSpinBox()
-        edit.setValue(connection.output_rate)
         edit.setMinimum(0.01)
         edit.setMaximum(10000)
+        edit.setValue(connection.rate)
         edit.wheelEvent = lambda event: None
         edit.valueChanged.connect(self.change_value)
         controls.addWidget(edit)
@@ -43,7 +43,7 @@ class InputWidget(QWidget):
 
     def change_value(self, value):
         """Resolve change value event"""
-        self.connection.output_rate = value
+        self.connection.rate = value
 
 
 class OutputWidget(QWidget):
@@ -65,9 +65,9 @@ class OutputWidget(QWidget):
         layout.addWidget(control_widget)
 
         edit = QDoubleSpinBox()
-        edit.setValue(connection.input_rate)
         edit.setMinimum(0.01)
         edit.setMaximum(10000)
+        edit.setValue(connection.rate)
         edit.wheelEvent = lambda event: None
         edit.valueChanged.connect(self.change_value)
         controls.addWidget(edit)
@@ -81,7 +81,7 @@ class OutputWidget(QWidget):
 
     def change_value(self, value):
         """Resolve change value event"""
-        self.connection.input_rate = value
+        self.connection.rate = value
 
 
 class SourcePanel(QWidget):
@@ -91,6 +91,7 @@ class SourcePanel(QWidget):
 
     def __init__(self, source: Source):
         super().__init__()
+        self.source = source
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -108,6 +109,22 @@ class SourcePanel(QWidget):
         layout.addWidget(sep1)
         layout.addSpacing(18)
 
+        time_label = QLabel('Time Step')
+        layout.addWidget(time_label)
+
+        edit = QDoubleSpinBox()
+        edit.setMinimum(0)
+        edit.setMaximum(1000)
+        edit.setValue(source.time_step)
+        edit.wheelEvent = lambda event: None
+        edit.valueChanged.connect(self.change_value)
+        layout.addWidget(edit)
+
+        sep2 = QFrame()
+        sep2.setFrameShape(QFrame.HLine)
+        layout.addWidget(sep2)
+        layout.addSpacing(18)
+
         text1 = QLabel("Inputs")
         text1.setStyleSheet('font-size: 12pt;')
         layout.addWidget(text1)
@@ -121,9 +138,9 @@ class SourcePanel(QWidget):
         self.add_input = input_button.clicked
         layout.addWidget(input_button)
 
-        sep2 = QFrame()
-        sep2.setFrameShape(QFrame.HLine)
-        layout.addWidget(sep2)
+        sep3 = QFrame()
+        sep3.setFrameShape(QFrame.HLine)
+        layout.addWidget(sep3)
         layout.addSpacing(18)
 
         text2 = QLabel("Outputs")
@@ -149,6 +166,10 @@ class SourcePanel(QWidget):
         self.deleted = delete_button.clicked
         layout.addWidget(delete_button)
 
+    def change_value(self, value):
+        """Resolve change time step value event"""
+        self.source.time_step = value
+
     def _notify_connection_deleted(self, connection: Connection):
         return lambda: self.connection_deleted.emit(connection)
 
@@ -158,6 +179,7 @@ class CurrencyPanel(QWidget):
 
     def __init__(self, currency: Currency):
         super().__init__()
+        self.currency = currency
 
         layout = QVBoxLayout()
         self.setLayout(layout)
@@ -174,6 +196,31 @@ class CurrencyPanel(QWidget):
         sep1.setFrameShape(QFrame.HLine)
         layout.addWidget(sep1)
         layout.addSpacing(18)
+
+        target_label = QLabel('Target Value')
+        layout.addWidget(target_label)
+
+        edit = QDoubleSpinBox()
+        edit.setMinimum(0)
+        edit.setMaximum(1000000)
+        edit.setValue(currency.target_value)
+        edit.wheelEvent = lambda event: None
+        edit.valueChanged.connect(self.change_value)
+        layout.addWidget(edit)
+
+        sep2 = QFrame()
+        sep2.setFrameShape(QFrame.HLine)
+        layout.addWidget(sep2)
+        layout.addSpacing(18)
+
+        delete_button = QPushButton('Delete')
+        delete_button.setStyleSheet(f"color: {DANGER_COLOR}; border: 2px solid {DANGER_COLOR};")
+        self.deleted = delete_button.clicked
+        layout.addWidget(delete_button)
+
+    def change_value(self, value):
+        """Resolve change target value event"""
+        self.currency.target_value = value
 
 
 class ItemPanel(QScrollArea):
@@ -204,13 +251,14 @@ class ItemPanel(QScrollArea):
         if prev is not None:
             prev.widget().deleteLater()
 
-        if isinstance(item, Source):
+        if isinstance(item, Currency):
+            panel = CurrencyPanel(item)
+            panel.deleted.connect(self.deleted.emit)
+            self.content.addWidget(panel)
+        elif isinstance(item, Source):
             panel = SourcePanel(item)
             panel.connection_deleted.connect(self.updated.emit)
             panel.deleted.connect(self.deleted.emit)
             panel.add_input.connect(self.add_input.emit)
             panel.add_connection.connect(self.add_connection.emit)
-            self.content.addWidget(panel)
-        elif isinstance(item, Currency):
-            panel = CurrencyPanel(item)
             self.content.addWidget(panel)
