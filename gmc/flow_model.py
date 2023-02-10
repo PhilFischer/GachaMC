@@ -50,6 +50,10 @@ class FlowModel():
         """Returns list of all components"""
         return self.currencies + self.sources
 
+    def num_components(self) -> int:
+        """Returns the number of components"""
+        return len(self.get_components())
+
     def move_component_position(self, component: Component, dpos: Position):
         """Sets new position for flow model component"""
         component.pos.translate(dpos)
@@ -77,6 +81,14 @@ class FlowModel():
         if notify:
             for callback in self.__callbacks:
                 callback(self)
+
+    def layout(self):
+        """Return node layout as dictionary"""
+        return {comp.id: comp.pos.coords() for comp in self.get_components()}
+
+    def avg_connection_length(self):
+        """Return average node distance"""
+        return sum(conn.length() for conn in self.connections) / len(self.connections)
 
     def normalize_positions(self):
         """Shift component positions such that the first component has position (0,0)"""

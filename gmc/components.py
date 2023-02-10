@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import uuid
+import math
 from typing import List
 
 
@@ -18,6 +19,14 @@ class Position():
 
     def __str__(self):
         return f"({self.x}, {self.y})"
+
+    def coords(self):
+        """Returns coordinates as tuple"""
+        return self.x, self.y
+
+    def distance(self, other: Position):
+        """Returns distance to other position"""
+        return math.sqrt((self.x-other.x)**2 + (self.y-other.y)**2)
 
     def translate(self, other: Position):
         """Translates the position by the values of other"""
@@ -68,6 +77,10 @@ class Connection():
         self.rate: float = rate
         source.add_connection(self)
         target.add_input(self)
+
+    def length(self):
+        """Returns length of the connection"""
+        return self.source.pos.distance(self.target.pos)
 
     # pylint: disable=protected-access
     def to_dict(self):

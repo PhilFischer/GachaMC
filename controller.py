@@ -1,6 +1,8 @@
 """Main Application Controller"""
 
-from PySide2.QtWidgets import QFileDialog
+from PySide2.QtGui import QGuiApplication
+from PySide2.QtCore import Qt, QTimer
+from PySide2.QtWidgets import QFileDialog, QStyle
 
 from ui.main_window import MainWindow
 from ui.dialogs.currency_dialog import CurrencyDialog
@@ -112,5 +114,21 @@ class Controller():
 
     def open_simulation_window(self):
         """Resolve start simulation event"""
+        if self.model.num_components() == 0 or len(self.model.connections) == 0:
+            return
         self._window = SimulationWindow(self.model)
+        QTimer.singleShot(0, lambda: Controller.center_window(self._window))
         self._window.show()
+
+    @staticmethod
+    def center_window(widget):
+        """Centers the application window"""
+        widget_window = widget.window()
+        widget_window.setGeometry(
+            QStyle.alignedRect(
+                Qt.LeftToRight,
+                Qt.AlignCenter,
+                widget_window.size(),
+                QGuiApplication.primaryScreen().availableGeometry(),
+            )
+        )
