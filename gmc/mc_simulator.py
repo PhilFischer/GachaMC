@@ -12,26 +12,31 @@ class Simulator():
 
     def __init__(self, model: FlowModel):
         self.step_num = 0
+        self.status = 0
         self._model = model.copy()
         self._graph = self._build_networkx_graph(self._model)
         rates, inc_inp, inc_out = self._build_flow_matrices(self._model)
         self._flow_info = self._compute_max_flow(inc_inp-inc_out, rates)
         if self._flow_info['status'] == 0:
             for idx, source in enumerate(self._model.sources):
+                if self._flow_info['s'][idx] == 0:
+                    self.status = 2
                 source.prop = {
-                    'name': source.name, 
-                    'opt_time': 1./self._flow_info['s'][idx], 
-                    'min_time': source.time_step, 
+                    'name': source.name,
+                    'opt_time': 1./self._flow_info['s'][idx] if self._flow_info['s'][idx] > 0 else 0,
+                    'min_time': source.time_step,
                     'steps': 0
                 }
             for idx, currency in enumerate(self._model.currencies):
                 currency.prop = {
-                    'name': currency.name, 
-                    'delta': self._flow_info['c'][idx], 
-                    'target': currency.target_value, 
-                    'storage': 0, 
+                    'name': currency.name,
+                    'delta': self._flow_info['c'][idx],
+                    'target': currency.target_value,
+                    'storage': 0,
                     'p_storage': 0
                 }
+        else:
+            self.status = 1
 
     @staticmethod
     def _build_flow_matrices(model: FlowModel):

@@ -35,7 +35,7 @@ class SimulationWindow(QWidget):
 
         # Simulation
         self.currency_storage = {curr_id: [0] for curr_id in self.simulator.currency_properties()}
-        while self.simulator.stage() < 1:
+        while self.simulator.stage() < 1 and self.simulator.status == 0:
             self.simulator.step()
             for curr_id, properties in self.simulator.currency_properties().items():
                 self.currency_storage[curr_id].append(properties['storage'])
@@ -63,7 +63,7 @@ class SimulationWindow(QWidget):
             max_panel = QLabel(f"Simulated Time: {self.simulator.step_num} time steps")
             max_panel.setStyleSheet('font-size: 12pt; margin: 0px 10px 0px 10px;')
             info.addWidget(max_panel)
-            opt_panel = QLabel(f"Throughput Time: {flow['steps']} time steps")
+            opt_panel = QLabel(f"Throughput Time: {round(flow['steps'], 2)} time steps")
             opt_panel.setStyleSheet('font-size: 12pt; margin: 0px 10px 0px 10px;')
             info.addWidget(opt_panel)
         else:
@@ -79,6 +79,7 @@ class SimulationWindow(QWidget):
         currency_selector.addItem('All')
         currency_selector.addItems(self.currency_names.values())
         currency_selector.currentIndexChanged.connect(self._select_currency)
+        currency_selector.setStyleSheet(f"color: {PRIMARY_COLOR}")
         info.addWidget(currency_selector)
         info.addStretch()
         info_widget = QWidget()
