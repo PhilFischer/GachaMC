@@ -41,6 +41,8 @@ Once the flow graph is correctly set up it can be simulated by pressing the play
 
 After the simulation is run a second window will open with the results. This shows the status of the optimization as well as the simulated time it took to reach the target values of all currencies and the maximum throughput time given that the necessary input for all sources is already present in order for them to start producing. The results window shows the flow graph with an additional node for the target values to flow to and a plot of the available currency at each point in the simulation. Individual currencies can be selected with the drop down menu.
 
+<img src="https://user-images.githubusercontent.com/36499405/218205186-c4409853-999a-4aa6-970a-2425a3ab4d24.PNG" width="50%">
+
 
 ## How it Works
 
