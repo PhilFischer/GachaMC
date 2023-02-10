@@ -9,7 +9,7 @@ An important part of video game design is the modeling and balancing of currency
 
 ## Installation
 
-To install the executable for Windows, Linux and MacOS please check out the packages section of this repository.
+To install the executable for Windows, Linux and MacOS please check out the releases section of this repository.
 
 In order to install from terminal use
 ```
